@@ -32,7 +32,6 @@ object WebService {
             conn.setRequestMethod("POST")
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
             if (msCookieManager.getCookieStore().getCookies().size > 0) {
-                //While joining the Cookies, use ',' or ';' as needed. Most of the server are using ';'
                 conn.setRequestProperty(
                     COOKIE,
                     TextUtils.join(";", msCookieManager.cookieStore.cookies)
@@ -51,13 +50,13 @@ object WebService {
             writer.close()
             os.close()
             val headerFields: Map<String, List<String>> =
-                conn.getHeaderFields()
+                conn.headerFields
             val cookiesHeader =
                 headerFields[COOKIES_HEADER]
             if (cookiesHeader != null) {
                 for (cookie in cookiesHeader) {
                     msCookieManager.cookieStore
-                        .add(null, HttpCookie.parse(cookie).get(0))
+                        .add(null, HttpCookie.parse(cookie)[0])
                     //todo: Log and check for cookies
                 }
             }
