@@ -23,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     var manyCookies: List<HttpCookie>? = null
     var cookieString: String? = null
     var cookieStringTwo: String? = null
+    var isOneFilled: Boolean = false
+    var isTwoFilled: Boolean = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,41 +41,21 @@ class MainActivity : AppCompatActivity() {
             webManager.setAcceptThirdPartyCookies(web_view, true)
         }
 
-        Log.i("ManagerCreate: ", "${webManager.hasCookies()}")
 
         web_view.settings.javaScriptEnabled = true
         web_view.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                if (reload.text == "1") {
-                    Log.i("CookieStringclearOne: ", "hereeee")
+                if (reload.text == "1" && isOneFilled == false) {
                     cookieString = webManager.getCookie(url)
                 }
 
-                cookieList1 = getCookie(url!!)
-                Log.i("Array: ", cookieList1?.get(0).toString())
 
-
-                if (reload.text == "2") {
-                    Log.i("CookieStringclear: ", "hereeee")
+                if (reload.text == "2" && isTwoFilled == false) {
                     cookieStringTwo = webManager.getCookie(url)
                 }
-//                getCookies(url!!)
-//                Log.i("Jar: ", webManager.getCookie(url))
 
 
-            }
-
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                super.onPageStarted(view, url, favicon)
-
-            }
-
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                return super.shouldOverrideUrlLoading(view, request)
             }
 
             override fun shouldInterceptRequest(
@@ -91,53 +73,33 @@ class MainActivity : AppCompatActivity() {
         web_view.loadUrl(url)
 
         clear.setOnClickListener {
-            webManager.removeAllCookie()
-            // web_view.reload()
-            // Log.i("ManagerCookies: ", "$cookieList")
-
+            Log.i("CookieStringOne", cookieString!!)
+            Log.i("CookieStringTwo", cookieStringTwo!!)
 
         }
 
         reload.setOnClickListener {
-            // web_view.reload()
-            // Log.i("CookieString: ", cookieString!!)
-            //Log.i("CookieStringTwo: ", cookieStringTwo!!)
             val abc: MutableMap<String, String> = HashMap()
             val abc2: MutableMap<String, String> = HashMap()
             if (reload.text == "2") {
+                isTwoFilled = true
                 if (cookieString != null) {
                     Log.i("CookieString: ", cookieString!!)
 
                     abc["Cookie"] = cookieString!!
-//                    for (cookie in cookieList1!!) {
-//                        webManager.setCookie(
-//                            url,
-//                            cookie
-//                        )
-//                    }
-                    //  webManager.setCookie(url, cookieString)
-                    //webManager.flush()
                     Log.i("ABC", abc.toString())
 
                 }
                 webManager.removeAllCookie()
                 web_view.loadUrl(url, abc)
-
                 reload.text = "1"
 
             } else {
+                isOneFilled = true
                 if (cookieStringTwo != null) {
                     Log.i("CookieStringTwo: ", cookieStringTwo!!)
 
                     abc2["Cookie"] = cookieStringTwo!!
-//                    for (cookie in cookieList1!!) {
-//                        webManager.setCookie(
-//                            url,
-//                            cookie
-//                        )
-//                    }
-                    //  webManager.setCookie(url, cookieStringTwo)
-                    // webManager.flush()
                     Log.i("ABC2", abc2.toString())
                 }
                 webManager.removeAllCookie()
@@ -157,10 +119,6 @@ class MainActivity : AppCompatActivity() {
             try {
                 val url = URL(urlString)
                 val connection: URLConnection = url.openConnection()
-//                connection.content
-//                val cookierJar = manager.cookieStore
-//                Log.d("Cookies: ", cookierJar.cookies.toString())
-
                 val headerFields: Map<String, List<String>> =
                     connection.headerFields
                 val cookiesHeader =
@@ -174,8 +132,6 @@ class MainActivity : AppCompatActivity() {
                             .add(null, HttpCookie.parse(cookie)[0])
                     }
                 }
-                //Log.i("HeaderCook: ", "${manager.cookieStore.cookies}")
-
                 manyCookies = manager.cookieStore.cookies
 
             } catch (e: Exception) {
