@@ -17,8 +17,9 @@ import java.net.*
 
 class MainActivity : AppCompatActivity() {
     val manager = java.net.CookieManager()
-    val webManager = CookieManager.getInstance()
+    val webManager: CookieManager = CookieManager.getInstance()
     var cookieList: List<String>? = null
+    var cookieList1: Array<String>? = null
     var manyCookies: List<HttpCookie>? = null
     var cookieString: String? = null
     var cookieStringTwo: String? = null
@@ -44,13 +45,14 @@ class MainActivity : AppCompatActivity() {
         web_view.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                if (reload.text == "1" && cookieStringTwo == null) {
+                if (reload.text == "1") {
                     Log.i("CookieStringclearOne: ", "hereeee")
                     cookieString = webManager.getCookie(url)
                 }
 
-                getCookies(url!!)
-                Log.i("Many: ", manyCookies.toString())
+                cookieList1 = getCookie(url!!)
+                Log.i("Array: ", cookieList1?.get(0).toString())
+
 
                 if (reload.text == "2") {
                     Log.i("CookieStringclear: ", "hereeee")
@@ -89,8 +91,7 @@ class MainActivity : AppCompatActivity() {
         web_view.loadUrl(url)
 
         clear.setOnClickListener {
-            webManager.removeSessionCookie()
-            web_view.reload()
+            webManager.removeAllCookie()
             // web_view.reload()
             // Log.i("ManagerCookies: ", "$cookieList")
 
@@ -107,11 +108,19 @@ class MainActivity : AppCompatActivity() {
                 if (cookieString != null) {
                     Log.i("CookieString: ", cookieString!!)
 
-                    abc["Set-cookie"] = cookieString!!
-                    webManager.setCookie(url, cookieString)
-                    webManager.flush()
+                    abc["Cookie"] = cookieString!!
+//                    for (cookie in cookieList1!!) {
+//                        webManager.setCookie(
+//                            url,
+//                            cookie
+//                        )
+//                    }
+                    //  webManager.setCookie(url, cookieString)
+                    //webManager.flush()
+                    Log.i("ABC", abc.toString())
 
                 }
+                webManager.removeAllCookie()
                 web_view.loadUrl(url, abc)
 
                 reload.text = "1"
@@ -121,9 +130,17 @@ class MainActivity : AppCompatActivity() {
                     Log.i("CookieStringTwo: ", cookieStringTwo!!)
 
                     abc2["Cookie"] = cookieStringTwo!!
-                    webManager.setCookie(url, cookieStringTwo)
-                    webManager.flush()
+//                    for (cookie in cookieList1!!) {
+//                        webManager.setCookie(
+//                            url,
+//                            cookie
+//                        )
+//                    }
+                    //  webManager.setCookie(url, cookieStringTwo)
+                    // webManager.flush()
+                    Log.i("ABC2", abc2.toString())
                 }
+                webManager.removeAllCookie()
                 web_view.loadUrl(url, abc2)
                 reload.text = "2"
             }
@@ -168,5 +185,11 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+    }
+
+    fun getCookie(siteName: String?): Array<String>? {
+        val cookieManager = CookieManager.getInstance()
+        val cookies = cookieManager.getCookie(siteName)
+        return cookies.split(";".toRegex()).toTypedArray()
     }
 }
