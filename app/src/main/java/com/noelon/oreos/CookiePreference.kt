@@ -8,6 +8,7 @@ class CookiePreference(context: Activity) {
     private val cookieOneKey = "cookieOne"
     private val cookieTwoKey = "cookieTwo"
     private val cookieState = "cookieState"
+    private val cookieTwoState = "cookieTwoState"
     private val mPrefs = context.getSharedPreferences(prefName, MODE_PRIVATE)
     private val editor = mPrefs.edit()
 
@@ -26,6 +27,10 @@ class CookiePreference(context: Activity) {
         return mPrefs.getBoolean(cookieState, false)
     }
 
+    fun getCookieTwoState(): Boolean {
+        return mPrefs.getBoolean(cookieTwoState, false)
+    }
+
     fun setCookieOne(cookie: String?) {
         if (cookie != null) {
             editor.putString(cookieOneKey, cookie)
@@ -42,6 +47,12 @@ class CookiePreference(context: Activity) {
 
     fun setCookieState(state: Boolean) {
         editor.putBoolean(cookieState, state)
+        editor.apply()
+
+    }
+
+    fun setTwoCookieState(state: Boolean) {
+        editor.putBoolean(cookieTwoState, state)
         editor.apply()
 
     }

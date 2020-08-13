@@ -29,7 +29,7 @@ object WebService {
             val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.setReadTimeout(15000)
             conn.setConnectTimeout(15000)
-            conn.setRequestMethod("POST")
+            conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
             if (msCookieManager.getCookieStore().getCookies().size > 0) {
                 conn.setRequestProperty(
