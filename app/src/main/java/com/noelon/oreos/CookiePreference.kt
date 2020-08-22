@@ -2,6 +2,9 @@ package com.noelon.oreos
 
 import android.app.Activity
 import android.content.Context.MODE_PRIVATE
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
 
 class CookiePreference(context: Activity) {
     private val prefName = "my_prefs"
@@ -9,6 +12,8 @@ class CookiePreference(context: Activity) {
     private val cookieTwoKey = "cookieTwo"
     private val cookieState = "cookieState"
     private val cookieTwoState = "cookieTwoState"
+    private val setKey = "cookiesSet"
+    private val gson = Gson()
     private val mPrefs = context.getSharedPreferences(prefName, MODE_PRIVATE)
     private val editor = mPrefs.edit()
 
@@ -16,6 +21,35 @@ class CookiePreference(context: Activity) {
     fun getCookieOne(): String? {
         val cookieOne = mPrefs.getString(cookieOneKey, null)
         return cookieOne
+    }
+
+    fun getCookieMap(domain: String): Map<String?, String?>? {
+        var map: Map<String?, String?>? = null
+        val set = mPrefs.getStringSet(setKey, setOf("default"))
+        for (i in set!!) {
+            if (i.contains(domain, true)) {
+                map = gson.fromJson(
+                    i,
+                    object : TypeToken<HashMap<String?, String?>?>() {}.type
+                )
+            }
+        }
+        return map
+    }
+
+    fun setCookieMap(domain: String, cookie: String) {
+        val map = mapOf(domain to cookie)
+        val mapString = gson.toJson(map)
+        val set = mPrefs.getStringSet(setKey, null)
+        if (set != null) {
+            set.add(mapString)
+            editor.putStringSet(setKey, set)
+        } else {
+            val set2 = setOf(mapString)
+            editor.putStringSet(setKey, set2)
+        }
+        editor.apply()
+
     }
 
     fun getCookieTwo(): String? {

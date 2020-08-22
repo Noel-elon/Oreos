@@ -2,6 +2,10 @@ package com.noelon.oreos
 
 import android.text.TextUtils
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.invoke
+import kotlinx.coroutines.launch
 import java.io.*
 import java.net.CookieManager
 import java.net.HttpCookie
@@ -22,6 +26,7 @@ object WebService {
         }
 
     fun sendPost(requestURL: String?, urlParameters: String?): String? {
+
         val url: URL
         var response: String? = ""
         try {
@@ -55,6 +60,7 @@ object WebService {
                 headerFields[COOKIES_HEADER]
             if (cookiesHeader != null) {
                 for (cookie in cookiesHeader) {
+
                     msCookieManager.cookieStore
                         .add(null, HttpCookie.parse(cookie)[0])
                     //todo: Log and check for cookies
@@ -72,6 +78,7 @@ object WebService {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            Log.i("RequestssError", e.message!!)
         }
         return response
     }
@@ -79,18 +86,21 @@ object WebService {
     // HTTP GET request
     @Throws(Exception::class)
     fun sendGet(url: String?): String {
-        val obj = URL(url)
-        val con: HttpURLConnection = obj.openConnection() as HttpURLConnection
+        CoroutineScope(Dispatchers.IO).launch {
 
-        // optional default is GET
-        con.requestMethod = "GET"
 
-        //add request header
-        con.setRequestProperty("User-Agent", "Mozilla")
-        /*
-    * https://stackoverflow.com/questions/16150089/how-to-handle-cookies-in-httpurlconnection-using-cookiemanager
-    * Get Cookies form cookieManager and load them to connection:
-     */if (msCookieManager.cookieStore.cookies.size > 0) {
+            val obj = URL(url)
+            val con: HttpURLConnection = obj.openConnection() as HttpURLConnection
+
+            // optional default is GET
+            con.requestMethod = "GET"
+
+            //add request header
+            con.setRequestProperty("User-Agent", "Mozilla")
+            /*
+        * https://stackoverflow.com/questions/16150089/how-to-handle-cookies-in-httpurlconnection-using-cookiemanager
+        * Get Cookies form cookieManager and load them to connection:
+         */if (msCookieManager.cookieStore.cookies.size > 0) {
             //While joining the Cookies, use ',' or ';' as needed. Most of the server are using ';'
             con.setRequestProperty(
                 COOKIE,
@@ -98,30 +108,33 @@ object WebService {
             )
         }
 
-        /*
-    * https://stackoverflow.com/questions/16150089/how-to-handle-cookies-in-httpurlconnection-using-cookiemanager
-    * Get Cookies form response header and load them to cookieManager:
-     */
-        val headerFields: Map<String, List<String>> =
-            con.headerFields
-        val cookiesHeader =
-            headerFields[COOKIES_HEADER]
-        if (cookiesHeader != null) {
-            for (cookie in cookiesHeader) {
-                msCookieManager.getCookieStore()
-                    .add(null, HttpCookie.parse(cookie).get(0))
+            /*
+        * https://stackoverflow.com/questions/16150089/how-to-handle-cookies-in-httpurlconnection-using-cookiemanager
+        * Get Cookies form response header and load them to cookieManager:
+         */
+            val headerFields: Map<String, List<String>> =
+                con.headerFields
+            val cookiesHeader =
+                headerFields[COOKIES_HEADER]
+            if (cookiesHeader != null) {
+                Log.i("RequestssHeader", cookiesHeader.toString())
+                for (cookie in cookiesHeader) {
+                    msCookieManager.getCookieStore()
+                        .add(null, HttpCookie.parse(cookie).get(0))
+                }
             }
+            val responseCode: Int = con.responseCode
+            val `in` = BufferedReader(
+                InputStreamReader(con.inputStream)
+            )
+            var inputLine: String? = null
+            val response = StringBuffer()
+            while (`in`.readLine().also { inputLine = it } != null) {
+                response.append(inputLine)
+            }
+            `in`.close()
+
         }
-        val responseCode: Int = con.responseCode
-        val `in` = BufferedReader(
-            InputStreamReader(con.inputStream)
-        )
-        var inputLine: String? = null
-        val response = StringBuffer()
-        while (`in`.readLine().also { inputLine = it } != null) {
-            response.append(inputLine)
-        }
-        `in`.close()
         return responseCode.toString()
     }
 

@@ -2,6 +2,7 @@ package com.noelon.oreos
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -35,24 +36,43 @@ class MainActivity : AppCompatActivity() {
 
             webManager.setAcceptThirdPartyCookies(web_view, true)
         }
-        web_view.settings.domStorageEnabled = false
+        // web_view.settings.domStorageEnabled = true
 
         web_view.settings.javaScriptEnabled = true
         web_view.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                Log.i("RequestsssssList", url!!)
+                val st = getDomain(url)
+                val map = prefs.getCookieMap(st)
+                if (!prefs.getCookieState()) {
+                    Log.i("RequestsssssMap", "Inside hereeee")
+                    prefs.setCookieMap(st, webManager.getCookie(url))
+
+                }
+
+
                 cookieString = webManager.getCookie(url)
                 if (!prefs.getCookieState()) {
                     prefs.setCookieOne(cookieString)
                 }
 
-
-
-
-
-
                 if (reload.text == "2" && !isTwoFilled) {
                     cookieStringTwo = webManager.getCookie(url)
+                }
+            }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                val dom = getDomain(url!!)
+                val map = prefs.getCookieMap(dom)
+                if (map != null) {
+                    val arr =
+                        map.toString().split("=".toRegex(), 2).toTypedArray()
+                    val cutCookie = arr[1]
+                    val cookie = removeLastChars(cutCookie,1)
+                    Log.i("RequestsssssCutCookie", cookie!!)
+
                 }
 
 
@@ -62,6 +82,7 @@ class MainActivity : AppCompatActivity() {
                 view: WebView?,
                 request: WebResourceRequest?
             ): Boolean {
+                prefs.setCookieState(false)
 
                 if (prefs.getCookieOne() != null && prefs.getCookieState()) {
                     val map: MutableMap<String, String> = HashMap()
@@ -70,9 +91,6 @@ class MainActivity : AppCompatActivity() {
                     webManager.removeAllCookie()
                     view?.loadUrl(request?.url.toString(), map)
                 }
-
-
-
                 return true
             }
 
@@ -81,7 +99,6 @@ class MainActivity : AppCompatActivity() {
         if (prefs.getCookieOne() != null) {
             val map: MutableMap<String, String> = HashMap()
             map["Cookie"] = prefs.getCookieOne()!!
-            Log.i("Requestsssss", "Here")
             webManager.removeAllCookie()
             web_view.loadUrl(url, map)
         } else {
@@ -93,41 +110,10 @@ class MainActivity : AppCompatActivity() {
             prefs.setCookieState(true)
             val intent = Intent(this, MainActivity2::class.java)
             startActivity(intent)
-
         }
 
         reload.setOnClickListener {
-
-//            val abc: MutableMap<String, String> = HashMap()
-//            val abc2: MutableMap<String, String> = HashMap()
-//            if (reload.text == "2") {
-//                isTwoFilled = true
-//                if (cookieString != null) {
-//                    Log.i("CookieString: ", cookieString!!)
-//
-//                    abc["Cookie"] = cookieString!!
-//                    Log.i("ABC", abc.toString())
-//
-//                }
-//                webManager.removeAllCookie()
-//                web_view.loadUrl(url, abc)
-//                reload.text = "1"
-//
-//            } else {
-//                isOneFilled = true
-//                if (cookieStringTwo != null) {
-//                    Log.i("CookieStringTwo: ", cookieStringTwo!!)
-//
-//                    abc2["Cookie"] = cookieStringTwo!!
-//                    Log.i("ABC2", abc2.toString())
-//                }
-//                webManager.removeAllCookie()
-//                web_view.loadUrl(url, abc2)
-//                reload.text = "2"
-//            }
-
         }
-
 
     }
 
@@ -164,5 +150,31 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    fun getDomain(url: String): String {
+        val arr =
+            url.split("//".toRegex(), 2).toTypedArray()
+        val firstWord = arr[0]
+        val theRest = arr[1]
+        Log.i("RequestsssssFirst", firstWord)
+        Log.i("RequestsssssSecond", theRest)
+
+        val arr2 =
+            theRest.split("/".toRegex(), 2).toTypedArray()
+        val domainName = arr2[0]
+
+        Log.i("Requestsssss2", domainName)
+
+        if (url.contains(domainName, true)) {
+            Log.i("RequestssIt does", "Yess")
+        } else {
+            Log.i("RequestssIt doesnt", "no")
+        }
+        return domainName
+    }
+
+    fun removeLastChars(str: String, chars: Int): String? {
+        return str.substring(0, str.length - chars)
     }
 }

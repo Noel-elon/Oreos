@@ -2,12 +2,14 @@ package com.noelon.oreos
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main2.*
 
 class MainActivity2 : AppCompatActivity() {
@@ -18,11 +20,16 @@ class MainActivity2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
         val prefs = CookiePreference(this)
-        webManager.removeAllCookie()
         val url = "https://www.google.com"
         web_view3.settings.javaScriptEnabled = true
         web_view3.settings.domStorageEnabled = false
+        webManager.setAcceptCookie(true)
 
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            webManager.setAcceptThirdPartyCookies(web_view3, true)
+        }
 
         web_view3.webViewClient = object : WebViewClient() {
 
@@ -55,6 +62,7 @@ class MainActivity2 : AppCompatActivity() {
             webManager.removeAllCookie()
             web_view3.loadUrl(url, map)
         } else {
+            webManager.removeAllCookie()
             web_view3.loadUrl(url)
         }
 
